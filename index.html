@@ -38,7 +38,7 @@ body:before{
   background-image:
     linear-gradient(rgba(255,255,255,.024) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.024) 1px,transparent 1px);
-  background-size:72px 72px;
+  background-size:44px 44px;
   pointer-events:none;
   mask-image:linear-gradient(#000,transparent 88%);
 }
@@ -55,9 +55,9 @@ body:before{
 .surface{
   background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.028));
   border:1px solid var(--line);
-  box-shadow:0 18px 48px rgba(0,0,0,.34);
+  box-shadow:var(--shadow);
   border-radius:28px;
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(18px);
 }
 
 .top{
@@ -566,161 +566,30 @@ a{color:#caf0ff}
 
 
 
-/* Custom dark date picker: avoids browser white/glassy native overlay */
+/* Date field: clean native calendar icon */
 .date-control{
   position:relative;
   width:100%;
 }
 
-.date-display{
-  width:100%;
-  height:48px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  background:#0a111f;
-  border:1px solid var(--line);
-  color:var(--text);
-  padding:13px 14px;
-  border-radius:15px;
+.date-control input[type="date"]{
+  padding-right:48px;
+  color-scheme:dark;
   cursor:pointer;
-  text-align:left;
 }
 
-.date-display:hover{
-  background:#0d1626;
-  border-color:rgba(98,216,255,.28);
-}
-
-.date-display:focus-visible{
-  outline:2px solid rgba(98,216,255,.35);
-  outline-offset:2px;
-}
-
-.date-display .calendar-mark{
-  opacity:.95;
-  color:#fff;
-  filter:drop-shadow(0 0 8px rgba(255,255,255,.18));
-}
-
-.date-popover{
+.date-control input[type="date"]::-webkit-calendar-picker-indicator{
   position:absolute;
-  z-index:30;
-  top:calc(100% + 10px);
-  left:0;
-  width:min(330px, calc(100vw - 34px));
-  padding:16px;
-  border-radius:20px;
-  border:1px solid rgba(255,255,255,.16);
-  background:#101827;
-  box-shadow:0 24px 70px rgba(0,0,0,.55);
-  display:none;
-}
-
-.date-popover.open{
-  display:block;
-}
-
-.date-popover-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:12px;
-}
-
-.date-popover-title{
-  font-weight:900;
-}
-
-.date-popover-head button{
-  min-width:38px;
-  padding:8px 10px;
-  border-radius:12px;
-}
-
-.date-weekdays,
-.date-grid{
-  display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:4px;
-}
-
-.date-weekdays{
-  margin-bottom:6px;
-  color:var(--muted);
-  font-size:.76rem;
-  font-weight:900;
-  text-align:center;
-}
-
-.date-day{
-  width:100%;
-  min-width:0;
-  height:34px;
-  display:grid;
-  place-items:center;
-  border-radius:10px;
-  border:1px solid transparent;
-  background:transparent;
-  color:var(--text);
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  width:22px;
+  height:22px;
   cursor:pointer;
-  font-weight:800;
-  padding:0;
-  line-height:1;
+  opacity:1;
+  filter:invert(1) brightness(1.65) contrast(1.15);
 }
 
-.date-day:hover{
-  background:rgba(98,216,255,.14);
-  border-color:rgba(98,216,255,.24);
-}
-
-.date-day.muted-day{
-  color:rgba(157,176,207,.45);
-}
-
-.date-day.selected-day{
-  background:linear-gradient(135deg,#ff9d1c,#ffc36a);
-  color:#101827;
-}
-
-.date-actions{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  margin-top:12px;
-}
-
-.date-actions button{
-  padding:8px 10px;
-  min-width:0;
-}
-
-
-
-/* Performance polish */
-.surface,
-.stat,
-.rank,
-.daily,
-.profile,
-.editor,
-.entry,
-.mini,
-.panel{
-  contain:layout paint;
-}
-
-@media (prefers-reduced-motion: reduce){
-  *,
-  *:before,
-  *:after{
-    animation:none !important;
-    transition:none !important;
-    scroll-behavior:auto !important;
-  }
-}
 
 @media(max-width:1100px){
   .hero-grid,.main,.bottom{grid-template-columns:1fr}
@@ -777,31 +646,72 @@ let selected = null;
 let dbReady = false;
 let notice = '';
 
-let profiles = [
+const DEFAULT_PROFILES = [
   {
     slug:'scalii',
+    owner_slug:'scalii',
+    account_type:'main',
     display_name:'Scalii',
     battletag:'Scalii#2905',
     battletag_slug:'Scalii-2905',
     blizzard_profile_url:'https://overwatch.blizzard.com/en-us/career/c15dad86ba78d6ffb0a022%7Cab18d17d2e26f8db1868b8f0c0a98492/'
   },
   {
+    slug:'junkerqueen',
+    owner_slug:'scalii',
+    account_type:'smurf',
+    display_name:'Junker Queen',
+    battletag:'JunkerQueen#2105',
+    battletag_slug:'JunkerQueen-2105',
+    blizzard_profile_url:''
+  },
+  {
     slug:'koi',
+    owner_slug:'koi',
+    account_type:'main',
     display_name:'Koi',
     battletag:'koi#21676',
     battletag_slug:'koi-21676',
     blizzard_profile_url:'https://overwatch.blizzard.com/en-us/career/f951a5c7e120cdfabf%7C1a2d2e391438c6788d4210edd57843ad/'
+  },
+  {
+    slug:'ana',
+    owner_slug:'koi',
+    account_type:'smurf',
+    display_name:'Ana',
+    battletag:'Ana#2431',
+    battletag_slug:'Ana-2431',
+    blizzard_profile_url:''
   }
 ];
 
+let profiles = [...DEFAULT_PROFILES];
+
+function mergeProfiles(dbProfiles){
+  const order = DEFAULT_PROFILES.map(p=>p.slug);
+  const map = new Map(DEFAULT_PROFILES.map(p=>[p.slug,{...p}]));
+
+  (dbProfiles || []).forEach(p=>{
+    const existing = map.get(p.slug) || {};
+    map.set(p.slug,{
+      ...existing,
+      ...p,
+      owner_slug:p.owner_slug || existing.owner_slug || p.slug,
+      account_type:p.account_type || existing.account_type || (p.owner_slug && p.owner_slug !== p.slug ? 'smurf' : 'main')
+    });
+
+    if(!order.includes(p.slug)) order.push(p.slug);
+  });
+
+  return [...map.values()].sort((a,b)=>{
+    const ai = order.indexOf(a.slug);
+    const bi = order.indexOf(b.slug);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+}
+
 const root = document.getElementById('root');
-const localISO = (date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2,'0');
-  const d = String(date.getDate()).padStart(2,'0');
-  return `${y}-${m}-${d}`;
-};
-const todayISO = () => localISO(new Date());
+const todayISO = () => new Date().toISOString().slice(0,10);
 const pct = (w,t) => t ? Math.round(w/t*100)+'%' : '0%';
 const qs = id => document.getElementById(id);
 
@@ -986,13 +896,55 @@ function rankInfo(rec){
   };
 }
 
+
+function officialProfileHref(profile){
+  if(profile?.blizzard_profile_url) return profile.blizzard_profile_url;
+
+  const tag = profile?.battletag || '';
+  if(!tag) return '';
+
+  return 'https://overwatch.blizzard.com/en-us/search/?q=' + encodeURIComponent(tag);
+}
+
 function selectedProfile(){
   return profiles.find(p=>p.slug === selected) || null;
+}
+
+function profileOwnerSlug(profile){
+  return profile?.owner_slug || profile?.parent_slug || profile?.slug || '';
+}
+
+function ownerDisplayName(profile){
+  const owner = profiles.find(p=>p.slug === profileOwnerSlug(profile));
+  return owner?.display_name || title(profileOwnerSlug(profile));
+}
+
+function accountProfiles(profile){
+  const owner = profileOwnerSlug(profile);
+  return profiles.filter(p=>profileOwnerSlug(p) === owner);
+}
+
+function accountSwitcher(profile){
+  const related = accountProfiles(profile);
+  if(related.length <= 1) return '';
+
+  return `
+    <div class="account-switcher">
+      <span class="switch-label">${profile.account_type === 'smurf' ? 'Smurf account' : 'Main account'}</span>
+      ${related.map(p=>`
+        <button data-nav="${esc(p.slug)}" class="${p.slug === selected ? 'active' : ''}">
+          ${esc(p.display_name)}
+        </button>
+      `).join('')}
+    </div>
+  `;
 }
 
 function canEdit(){
   const p = selectedProfile();
   const email = (user?.email || '').toLowerCase();
+  const loginSlug = email.split('@')[0];
+  const owner = profileOwnerSlug(p);
 
   return !!(
     dbReady &&
@@ -1000,7 +952,8 @@ function canEdit(){
     p &&
     (
       p.auth_user_id === user.id ||
-      email.split('@')[0] === p.slug
+      loginSlug === p.slug ||
+      loginSlug === owner
     )
   );
 }
@@ -1026,14 +979,21 @@ function authBox(){
     `;
 }
 
+function mainProfiles(){
+  return profiles.filter(p=>p.account_type !== 'smurf');
+}
+
 function nav(){
+  const current = selectedProfile();
+  const activeOwner = current ? profileOwnerSlug(current) : selected;
+
   return `
     <nav class="top surface">
       <div class="nav">
         <div class="brand">OW <span>Ranked</span></div>
         <button data-home class="${!selected ? 'active' : ''}">Home</button>
-        ${profiles.map(p=>`
-          <button data-nav="${esc(p.slug)}" class="${p.slug === selected ? 'active' : ''}">
+        ${mainProfiles().map(p=>`
+          <button data-nav="${esc(p.slug)}" class="${profileOwnerSlug(p) === activeOwner ? 'active' : ''}">
             ${esc(p.display_name)}
           </button>
         `).join('')}
@@ -1049,16 +1009,17 @@ function shell(html){
 }
 
 function home(){
-  const cards = profiles.map(p=>{
+  const cards = mainProfiles().map(p=>{
     const s = summarize(matches.filter(m=>m.profile_slug === p.slug));
 
     return `
       <div class="profile">
         <div class="profile-top">
           <div>
-            <div class="label">Profile</div>
+            <div class="label">${p.account_type === 'smurf' ? 'Smurf account' : 'Main account'}</div>
             <h2>${esc(p.display_name)}</h2>
             <p class="sub">${esc(p.battletag || '')}</p>
+            ${p.account_type === 'smurf' ? `<span class="smurf-badge">Alt of ${esc(ownerDisplayName(p))}</span>` : ''}
           </div>
           <div class="avatar">${esc((p.display_name || '?')[0])}</div>
         </div>
@@ -1078,7 +1039,12 @@ function home(){
           </div>
         </div>
 
-        <button class="primary" data-nav="${esc(p.slug)}">Open dashboard</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="primary" data-nav="${esc(p.slug)}">Open dashboard</button>
+          ${accountProfiles(p).filter(x=>x.slug !== p.slug).map(x=>`
+            <button class="secondary" data-nav="${esc(x.slug)}">View ${esc(x.display_name)}</button>
+          `).join('')}
+        </div>
       </div>
     `;
   }).join('');
@@ -1183,14 +1149,18 @@ function profilePage(){
           <div class="eyebrow">${esc(p.display_name)} dashboard</div>
           <h1>Track the climb. Review every session.</h1>
           <p class="lead">
-            ${esc(p.battletag || '')}
-            ·
-            ${
-              p.blizzard_profile_url
-                ? `<a target="_blank" href="${esc(p.blizzard_profile_url)}">Official profile</a>`
-                : 'Public profile'
-            }
+            <span class="profile-link-row">
+              <span>${esc(p.battletag || '')}</span>
+              <span>·</span>
+              ${
+                officialProfileHref(p)
+                  ? `<a target="_blank" href="${esc(officialProfileHref(p))}">Open Overwatch profile</a>`
+                  : 'No official profile attached yet'
+              }
+              ${p.account_type === 'smurf' ? `<span class="smurf-badge">Alt of ${esc(ownerDisplayName(p))}</span>` : ''}
+            </span>
           </p>
+          ${accountSwitcher(p)}
         </div>
 
         <div class="login">
@@ -1207,7 +1177,7 @@ function profilePage(){
         <div class="section-head">
           <div>
             <h2>Competitive ranks</h2>
-            <p class="sub">Uses real Overwatch rank when the public API provides them.</p>
+            <p class="sub">Uses real Overwatch rank icons when the public API provides them.</p>
           </div>
           <div class="notice">${editable ? 'Session tools unlocked' : 'Showcase mode'}</div>
         </div>
@@ -1324,134 +1294,6 @@ function profilePage(){
   `);
 }
 
-
-function formatDateDisplay(iso){
-  if(!iso) return '';
-  const parts = iso.split('-');
-  if(parts.length !== 3) return iso;
-  return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
-
-function monthTitle(year,monthIndex){
-  return new Date(year,monthIndex,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-}
-
-function buildDatePicker(){
-  const input = qs('playedOn');
-  const display = qs('dateDisplay');
-  const textEl = qs('dateDisplayText');
-  const popover = qs('datePopover');
-  if(!input || !display || !textEl || !popover) return;
-
-  let visibleDate = input.value ? new Date(input.value + 'T00:00:00') : new Date();
-
-  const syncDisplay = () => {
-    textEl.textContent = formatDateDisplay(input.value);
-  };
-
-  const renderCalendar = () => {
-    const year = visibleDate.getFullYear();
-    const month = visibleDate.getMonth();
-    const selected = input.value;
-    const first = new Date(year,month,1);
-    const startDay = first.getDay();
-    const daysInMonth = new Date(year,month + 1,0).getDate();
-    const daysInPrev = new Date(year,month,0).getDate();
-
-    let cells = '';
-
-    for(let i=0;i<42;i++){
-      const dayNumber = i - startDay + 1;
-      let cellDate;
-      let muted = false;
-
-      if(dayNumber < 1){
-        cellDate = new Date(year,month - 1,daysInPrev + dayNumber);
-        muted = true;
-      }else if(dayNumber > daysInMonth){
-        cellDate = new Date(year,month + 1,dayNumber - daysInMonth);
-        muted = true;
-      }else{
-        cellDate = new Date(year,month,dayNumber);
-      }
-
-      const iso = localISO(cellDate);
-      const label = cellDate.getDate();
-      cells += `<button type="button" class="date-day ${muted ? 'muted-day' : ''} ${iso === selected ? 'selected-day' : ''}" data-date="${iso}">${label}</button>`;
-    }
-
-    popover.innerHTML = `
-      <div class="date-popover-head">
-        <button type="button" data-month-prev aria-label="Previous month">‹</button>
-        <div class="date-popover-title">${monthTitle(year,month)}</div>
-        <button type="button" data-month-next aria-label="Next month">›</button>
-      </div>
-      <div class="date-weekdays">
-        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
-      </div>
-      <div class="date-grid">${cells}</div>
-      <div class="date-actions">
-        <button type="button" data-date-today>Today</button>
-        <button type="button" data-date-close>Close</button>
-      </div>
-    `;
-
-    popover.querySelector('[data-month-prev]')?.addEventListener('click',()=>{
-      visibleDate = new Date(year,month - 1,1);
-      renderCalendar();
-    });
-
-    popover.querySelector('[data-month-next]')?.addEventListener('click',()=>{
-      visibleDate = new Date(year,month + 1,1);
-      renderCalendar();
-    });
-
-    popover.querySelector('[data-date-today]')?.addEventListener('click',()=>{
-      input.value = todayISO();
-      visibleDate = new Date(input.value + 'T00:00:00');
-      syncDisplay();
-      renderCalendar();
-    });
-
-    popover.querySelector('[data-date-close]')?.addEventListener('click',()=>{
-      popover.classList.remove('open');
-    });
-
-    popover.querySelectorAll('[data-date]').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        input.value = btn.dataset.date;
-        visibleDate = new Date(input.value + 'T00:00:00');
-        syncDisplay();
-        popover.classList.remove('open');
-      });
-    });
-  };
-
-  syncDisplay();
-  renderCalendar();
-
-  display.addEventListener('click',(event)=>{
-    event.stopPropagation();
-    popover.classList.toggle('open');
-    renderCalendar();
-  });
-
-  popover.addEventListener('click',(event)=>{
-    event.stopPropagation();
-  });
-
-  if(!window.__owTrackerDateOutsideBound){
-    window.__owTrackerDateOutsideBound = true;
-    document.addEventListener('click',(event)=>{
-      const activePopover = document.querySelector('.date-popover.open');
-      if(!activePopover) return;
-      if(event.target.closest('.date-control')) return;
-      activePopover.classList.remove('open');
-    });
-  }
-}
-
-
 function editor(){
   return `
     <div class="section surface">
@@ -1466,12 +1308,7 @@ function editor(){
             <div>
               <div class="label">Date</div>
               <div class="date-control">
-                <input id="playedOn" type="hidden" value="${todayISO()}">
-                <button type="button" class="date-display" id="dateDisplay">
-                  <span id="dateDisplayText">${formatDateDisplay(todayISO())}</span>
-                  <span class="calendar-mark">▣</span>
-                </button>
-                <div class="date-popover" id="datePopover"></div>
+                <input id="playedOn" type="date" value="${todayISO()}">
               </div>
             </div>
 
@@ -1541,7 +1378,22 @@ function bind(){
       heroChecklist(qs('role').value);
   });
 
-  buildDatePicker();
+
+  const dateInput = qs('playedOn');
+  const dateButton = qs('dateOpenBtn');
+  const openDatePicker = () => {
+    if(!dateInput) return;
+    if(typeof dateInput.showPicker === 'function'){
+      dateInput.showPicker();
+    }else{
+      dateInput.focus();
+      dateInput.click();
+    }
+  };
+  dateButton?.addEventListener('click', openDatePicker);
+  dateInput?.addEventListener('click', () => {
+    if(typeof dateInput.showPicker === 'function') dateInput.showPicker();
+  });
 
   document.querySelectorAll('[data-delete]').forEach(b=>{
     b.onclick = () => removeEntry(b.dataset.delete);
@@ -1588,6 +1440,8 @@ function timeout(p,ms,label){
 }
 
 async function loadData(){
+  render();
+
   if(!client){
     notice = 'Connecting to database...';
     render();
@@ -1610,7 +1464,7 @@ async function loadData(){
       'Profiles'
     );
 
-    if(p.data?.length) profiles = p.data;
+    profiles = mergeProfiles(p.data || []);
 
     const m = await timeout(
       client.from('matches').select('*').order('played_on',{ascending:false}).order('created_at',{ascending:false}),
